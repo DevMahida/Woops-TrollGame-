@@ -25,6 +25,7 @@ public class TrollGame : ModuleRules
 
 		PublicIncludePaths.AddRange(new string[] {
 			"TrollGame",
+			"TrollGame/Traps/MathTrap",
 			"TrollGame/Variant_Horror",
 			"TrollGame/Variant_Horror/UI",
 			"TrollGame/Variant_Shooter",
