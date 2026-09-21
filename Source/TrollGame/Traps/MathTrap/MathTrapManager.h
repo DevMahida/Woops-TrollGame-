@@ -9,6 +9,7 @@
 class AMathTrapBuzzer;
 class AMathTrapExitDoor;
 class UTextRenderComponent;
+class UPointLightComponent;
 class USoundBase;
 
 /** Struct representing a complex math equation */
@@ -28,6 +29,34 @@ struct FComplexMathEquation
 	FComplexMathEquation() {}
 	FComplexMathEquation(const FString& InText, int32 InAnswer)
 		: EquationText(InText), BaseAnswer(InAnswer) {}
+};
+
+/** Struct tracking generic level actor buzzers (e.g. Buzzer pedestals placed in the level) */
+USTRUCT(BlueprintType)
+struct FGenericBuzzerInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	int32 Number = 1;
+
+	UPROPERTY()
+	TObjectPtr<AActor> BuzzerActor;
+
+	UPROPERTY()
+	TObjectPtr<USceneComponent> ButtonComponent;
+
+	UPROPERTY()
+	TObjectPtr<UTextRenderComponent> NumberText;
+
+	UPROPERTY()
+	TObjectPtr<UPointLightComponent> HighlightLight;
+
+	FVector InitialRelLoc = FVector::ZeroVector;
+	FVector TargetRelLoc = FVector::ZeroVector;
+	bool bIsAnimating = false;
+	bool bIsReturning = false;
+	float LastPressedTime = -10.0f;
 };
 
 /** Consequence applied to player on pressing wrong buzzer */
@@ -54,6 +83,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 public:
 	/** Pool of complex equations (both BODMAS and intimidating math) */
@@ -64,11 +94,19 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Math Trap|References")
 	TObjectPtr<AMathTrapExitDoor> ExitDoor;
 
-	/** List of all buzzers in this room (auto-detected if empty) */
+	/** Generic level door actor if ExitDoor is not a dedicated AMathTrapExitDoor */
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Math Trap|References")
+	TObjectPtr<AActor> GenericDoorActor;
+
+	/** List of all dedicated AMathTrapBuzzer actors in this room (auto-detected if empty) */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Math Trap|References")
 	TArray<TObjectPtr<AMathTrapBuzzer>> RoomBuzzers;
 
-	/** The Screen actor in the room to display equations and taunts */
+	/** List of generic level actor buzzers (auto-discovered at runtime) */
+	UPROPERTY(Transient)
+	TArray<FGenericBuzzerInfo> GenericBuzzers;
+
+	/** The Screen actor in the room to display equations and taunts (e.g. Screen2) */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Math Trap|References")
 	TObjectPtr<AActor> RoomScreenActor;
 
@@ -100,9 +138,25 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Math Trap|State")
 	int32 CurrentAttempt = 1;
 
+	/** Whether the math trap has been activated by reaching the checkpoint */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Math Trap|State")
+	bool bTrapActivated = false;
+
+	/** Whether the math trap has been solved and completed */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Math Trap|State")
+	bool bTrapCompleted = false;
+
 	/** Currently active equation */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Math Trap|State")
 	FComplexMathEquation CurrentEquation;
+
+	/** Activates the math trap and displays the equation on Screen2 */
+	UFUNCTION(BlueprintCallable, Category = "Math Trap")
+	void ActivateTrap();
+
+	/** Core logic for handling buzzer presses */
+	UFUNCTION(BlueprintCallable, Category = "Math Trap")
+	void ProcessBuzzerInput(int32 PressedNum, AActor* BuzzerActor, ACharacter* PlayerCharacter);
 
 	/** Called by an AMathTrapBuzzer when pressed by the player */
 	UFUNCTION(BlueprintCallable, Category = "Math Trap")
@@ -116,10 +170,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Math Trap")
 	void PickNewEquation();
 
+	/** Shuffles the numbers 1 to 10 randomly across all buzzers in the room */
+	UFUNCTION(BlueprintCallable, Category = "Math Trap")
+	void ShuffleBuzzerNumbers();
+
 protected:
 	/** Cached pointer to text render component on RoomScreenActor */
 	UPROPERTY(Transient)
 	TObjectPtr<UTextRenderComponent> ScreenTextComp;
+
+	/** Center screen prompt text for look-at buzzer interaction */
+	UPROPERTY(Transient)
+	TObjectPtr<UTextRenderComponent> CenterPromptTextComp;
 
 	/** Indices of equations that haven't been shown yet */
 	TArray<int32> UnusedEquationIndices;
@@ -128,11 +190,28 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<AMathTrapBuzzer> FakeHighlightedBuzzer;
 
+	/** Index of generic buzzer highlighted for Attempt 5 */
+	int32 FakeHighlightedGenericBuzzerIndex = INDEX_NONE;
+
+	/** Left door component or root of left door actor */
+	UPROPERTY(Transient)
+	TObjectPtr<USceneComponent> LeftDoorComp;
+
+	/** Right door component or root of right door actor */
+	UPROPERTY(Transient)
+	TObjectPtr<USceneComponent> RightDoorComp;
+
+	FVector LeftDoorClosedLoc = FVector::ZeroVector;
+	FVector LeftDoorOpenLoc = FVector::ZeroVector;
+	FVector RightDoorClosedLoc = FVector::ZeroVector;
+	FVector RightDoorOpenLoc = FVector::ZeroVector;
+	bool bDoorOpeningAnimation = false;
+
 	/** Updates the text on the room screen */
 	void UpdateScreenText(const FString& NewText, const FColor& TextColor = FColor(0, 255, 235, 255));
 
 	/** Applies the configured consequence to the player */
-	void ApplyConsequence(ACharacter* PlayerChar, AMathTrapBuzzer* FromBuzzer);
+	void ApplyConsequence(ACharacter* PlayerChar, AActor* FromBuzzer);
 
 	/** Pre-populates the default equations pool */
 	void InitializeDefaultEquations();

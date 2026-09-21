@@ -6,7 +6,9 @@ public class TrollGame : ModuleRules
 {
 	public TrollGame(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		// Disable PCH creation to eliminate MSVC C3859 / 1455 PCH virtual memory allocation errors
+		PCHUsage = PCHUsageMode.NoPCHs;
+		bUseUnity = true;
 
 		PublicDependencyModuleNames.AddRange(new string[] {
 			"Core",

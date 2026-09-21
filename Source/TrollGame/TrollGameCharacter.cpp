@@ -12,6 +12,8 @@
 #include "EngineUtils.h"
 #include "Engine/Engine.h"
 #include "TrollGame.h"
+#include "MathTrapManager.h"
+#include "TrollPressurePlate.h"
 
 ATrollGameCharacter::ATrollGameCharacter()
 {
@@ -122,13 +124,24 @@ void ATrollGameCharacter::BeginPlay()
 			{
 				RoomScreenActor = Actor;
 			}
-			else if (Label.Equals(TEXT("PressurePlate"), ESearchCase::IgnoreCase))
+			else if (Label.Contains(TEXT("Pressure"), ESearchCase::IgnoreCase) || 
+			         Name.Contains(TEXT("Pressure"), ESearchCase::IgnoreCase) || 
+			         Actor->ActorHasTag(TEXT("PressurePlate")) || 
+			         Actor->ActorHasTag(TEXT("Pressure")))
 			{
-				HallwayPressurePlateActor = Actor;
+				HallwayPressurePlateActors.AddUnique(Actor);
 			}
-			else if (Label.Contains(TEXT("CheckPoint"), ESearchCase::IgnoreCase) || Label.Contains(TEXT("Checkpoint"), ESearchCase::IgnoreCase))
+			else if (Label.Contains(TEXT("CheckPoint"), ESearchCase::IgnoreCase) || 
+			         Label.Contains(TEXT("Checkpoint"), ESearchCase::IgnoreCase) || 
+			         Name.Contains(TEXT("CheckPoint"), ESearchCase::IgnoreCase) || 
+			         Name.Contains(TEXT("Checkpoint"), ESearchCase::IgnoreCase) || 
+			         Label.Contains(TEXT("checkpoint"), ESearchCase::IgnoreCase) || 
+			         Name.Contains(TEXT("checkpoint"), ESearchCase::IgnoreCase))
 			{
-				LevelCheckpoints.Add(Actor);
+				if (!LevelCheckpoints.Contains(Actor))
+				{
+					LevelCheckpoints.Add(Actor);
+				}
 			}
 
 			// Trap Trigger detection on Actor
@@ -275,14 +288,42 @@ void ATrollGameCharacter::BeginPlay()
 				
 				ScreenTextComponent->SetText(FText::FromString(RoomWelcomeMessage));
 				ScreenTextComponent->SetTextRenderColor(FColor(0, 255, 235, 255)); // Bright neon cyan glow
-				ScreenTextComponent->SetWorldSize(38.0f);
+				ScreenTextComponent->SetWorldSize(32.0f);
 				ScreenTextComponent->SetHorizSpacingAdjust(1.0f);
-				ScreenTextComponent->SetVertSpacingAdjust(1.25f);
+				ScreenTextComponent->SetVertSpacingAdjust(1.20f);
 				ScreenTextComponent->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
 				ScreenTextComponent->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
 			}
 		}
 
+		// Ensure MathTrapManager is spawned if Math Trap actors exist (Screen2 or Buzzer)
+		bool bHasMathTrapActors = false;
+		bool bManagerAlreadyExists = false;
+
+		for (TActorIterator<AActor> It(World); It; ++It)
+		{
+			AActor* Actor = *It;
+			if (!Actor) continue;
+
+			if (Actor->IsA<AMathTrapManager>())
+			{
+				bManagerAlreadyExists = true;
+				break;
+			}
+
+			FString Label = Actor->GetActorLabel();
+			if (Label.Contains(TEXT("Screen2"), ESearchCase::IgnoreCase) || 
+			    Label.Contains(TEXT("Buzzer"), ESearchCase::IgnoreCase) ||
+			    Label.Contains(TEXT("ButtonBuzzer"), ESearchCase::IgnoreCase))
+			{
+				bHasMathTrapActors = true;
+			}
+		}
+
+		if (bHasMathTrapActors && !bManagerAlreadyExists)
+		{
+			World->SpawnActor<AMathTrapManager>(AMathTrapManager::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
+		}
 	}
 
 	// Initialize default checkpoint to Start location if available, otherwise player's initial transform
@@ -354,10 +395,10 @@ void ATrollGameCharacter::Tick(float DeltaSeconds)
 		CheckpointActor->GetActorBounds(false, CPOrigin, CPBoxExtent);
 
 		float Dist2D = FVector::Dist2D(PlayerLoc, CPOrigin);
-		float MaxRadius = FMath::Max(CPBoxExtent.X, CPBoxExtent.Y) + 80.0f;
+		float MaxRadius = FMath::Max(150.0f, FMath::Max(CPBoxExtent.X, CPBoxExtent.Y) + 80.0f);
 		float DistZ = FMath::Abs(PlayerLoc.Z - CPOrigin.Z);
 
-		if (Dist2D <= MaxRadius && DistZ <= CPBoxExtent.Z + 120.0f)
+		if (Dist2D <= MaxRadius && DistZ <= FMath::Max(150.0f, CPBoxExtent.Z + 120.0f))
 		{
 			// Check if this is a newly entered checkpoint
 			bool bIsNewCP = (ActiveCheckpointActor != CheckpointActor);
@@ -380,6 +421,20 @@ void ATrollGameCharacter::Tick(float DeltaSeconds)
 
 					SetActiveCheckpoint(NewCPTransform);
 
+					// Activate MathTrapManager when checkpoint is reached
+					UWorld* World = GetWorld();
+					if (World)
+					{
+						for (TActorIterator<AMathTrapManager> MathIt(World); MathIt; ++MathIt)
+						{
+							AMathTrapManager* MathMgr = *MathIt;
+							if (MathMgr && !MathMgr->bTrapActivated)
+							{
+								MathMgr->ActivateTrap();
+							}
+						}
+					}
+
 					if (GEngine)
 					{
 						GEngine->AddOnScreenDebugMessage(50, 4.0f, FColor::Green,
@@ -394,67 +449,142 @@ void ATrollGameCharacter::Tick(float DeltaSeconds)
 		}
 	}
 
-	// --- 3. PRESSURE PLATE TRAP CHECK ---
-	if (HallwayPressurePlateActor)
+	// --- 3. DYNAMIC PRESSURE PLATE TRAP CHECK ---
+	if (HallwayPressurePlateActors.Num() == 0)
 	{
-		FVector PlateLoc = HallwayPressurePlateActor->GetActorLocation();
-		float Dist2DSq = FVector::DistSquared2D(PlayerLoc, PlateLoc);
-		float DistZ = FMath::Abs(PlayerLoc.Z - PlateLoc.Z);
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			for (TActorIterator<AActor> It(World); It; ++It)
+			{
+				AActor* Actor = *It;
+				if (!IsValid(Actor) || Actor == this) continue;
 
-		if (Dist2DSq < 150.0f * 150.0f && DistZ < 120.0f)
+				FString Label = Actor->GetActorLabel();
+				FString Name = Actor->GetName();
+
+				if (Actor->IsA<ATrollPressurePlate>() ||
+				    Label.Contains(TEXT("Pressure"), ESearchCase::IgnoreCase) || 
+				    Name.Contains(TEXT("Pressure"), ESearchCase::IgnoreCase) || 
+				    Actor->ActorHasTag(TEXT("PressurePlate")))
+				{
+					HallwayPressurePlateActors.AddUnique(Actor);
+				}
+			}
+
+			if (HallwayPressurePlateActors.Num() > 0)
+			{
+				if (GEngine)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 8.0f, FColor::Yellow,
+						FString::Printf(TEXT("Found %d PressurePlate Actor(s) in Level!"), HallwayPressurePlateActors.Num()));
+				}
+			}
+		}
+	}
+
+	if (HallwayPressurePlateActors.Num() > 0)
+	{
+		bool bIsOnPlate = false;
+		bool bIsOnSidePlate = false;
+
+		for (AActor* PPActor : HallwayPressurePlateActors)
+		{
+			if (!IsValid(PPActor)) continue;
+
+			ATrollPressurePlate* PressurePlate = Cast<ATrollPressurePlate>(PPActor);
+			bool bThisOnPlate = false;
+			bool bThisOnSidePlate = false;
+
+			if (PressurePlate)
+			{
+				bThisOnPlate = PressurePlate->IsPlayerOnTrap(PlayerLoc, bThisOnSidePlate);
+			}
+			else
+			{
+				FVector ActorLoc = PPActor->GetActorLocation();
+				FVector CPOrigin, CPExtent;
+				PPActor->GetActorBounds(false, CPOrigin, CPExtent);
+
+				FVector LocalOffset = PPActor->GetActorRotation().UnrotateVector(PlayerLoc - ActorLoc);
+				float MarginX = FMath::Max(CPExtent.X, 60.0f) + 60.0f;
+				float MarginY = FMath::Max(CPExtent.Y, 60.0f) + 60.0f;
+
+				bThisOnPlate = (FMath::Abs(LocalOffset.X) <= MarginX) &&
+				               (FMath::Abs(LocalOffset.Y) <= MarginY) &&
+				               (LocalOffset.Z >= -500.0f && LocalOffset.Z <= 1000.0f);
+				
+				FString ActName = PPActor->GetActorLabel();
+				bThisOnSidePlate = ActName.Contains(TEXT("Side"), ESearchCase::IgnoreCase) ||
+				                   (FMath::Abs(LocalOffset.X) > CPExtent.X * 0.4f || FMath::Abs(LocalOffset.Y) > CPExtent.Y * 0.4f);
+			}
+
+			if (bThisOnPlate)
+			{
+				bIsOnPlate = true;
+				bIsOnSidePlate = bThisOnSidePlate;
+				break;
+			}
+		}
+
+		// Debug: Show live detection values every frame on HUD
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(100, 0.0f, FColor::White,
+				FString::Printf(TEXT("PP Debug: OnPlate=%s SidePlate=%s Triggered=%s (Total Actors: %d)"),
+				bIsOnPlate ? TEXT("YES") : TEXT("NO"),
+				bIsOnSidePlate ? TEXT("YES") : TEXT("NO"),
+				bHasTriggeredPressurePlate ? TEXT("YES") : TEXT("NO"),
+				HallwayPressurePlateActors.Num()));
+		}
+
+		if (bIsOnPlate)
 		{
 			if (!bHasTriggeredPressurePlate)
 			{
 				bHasTriggeredPressurePlate = true;
 
-				// Teleport player directly to the latest active checkpoint
+				if (GEngine)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red,
+						FString::Printf(TEXT("PRESSURE PLATE TRIGGERED! [%s] Target CP=[%s]"), 
+						bIsOnSidePlate ? TEXT("SIDE PANEL") : TEXT("MAIN PLATE"),
+						ActiveCheckpointActor ? *ActiveCheckpointActor->GetActorLabel() : TEXT("Start")));
+				}
+
+				// 1. Teleport player directly to the latest active checkpoint
 				FVector TargetLoc = ActiveCheckpointTransform.GetLocation();
 				FRotator TargetRot = ActiveCheckpointTransform.GetRotation().Rotator();
 				TeleportTo(TargetLoc, TargetRot, false, true);
 
-				if (bHasActiveCheckpoint)
-				{
-					// Player has reached a level checkpoint (e.g. CheckPoint_1): restore to normal size & full speed!
-					ResetPlayerScaleAndMovement();
+				// 2. Always shrink player to half size and halve speed & jump when stepping on pressure plate!
+				SetActorScale3D(BaseActorScale * 0.5f);
 
-					if (GEngine)
-					{
-						GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Green,
-							TEXT("Teleported to Checkpoint! Normal size & speed maintained."));
-					}
+				if (MoveComp)
+				{
+					MoveComp->Velocity = FVector::ZeroVector;
+					MoveComp->MaxWalkSpeed = BaseMaxWalkSpeed * 0.5f;
+					MoveComp->JumpZVelocity = BaseJumpZVelocity * 0.5f;
 				}
-				else
+
+				// 3. Update the screen text for the shrink trap (side panel roast vs main shrink trap message)
+				if (ScreenTextComponent)
 				{
-					// First hallway before checkpoint 1: Shrink player to half size and halve speed & jump!
-					SetActorScale3D(BaseActorScale * 0.5f);
+					FString DisplayMsg = bIsOnSidePlate ? RoomSidePlateShrinkMessage : RoomShrinkTrapMessage;
+					ScreenTextComponent->SetText(FText::FromString(DisplayMsg));
+				}
 
-					if (MoveComp)
-					{
-						MoveComp->Velocity = FVector::ZeroVector;
-						MoveComp->MaxWalkSpeed = BaseMaxWalkSpeed * 0.5f;
-						MoveComp->JumpZVelocity = BaseJumpZVelocity * 0.5f;
-					}
-
-					// Update the screen text for the shrink trap
-					if (ScreenTextComponent)
-					{
-						ScreenTextComponent->SetText(FText::FromString(RoomShrinkTrapMessage));
-					}
-
-					if (GEngine)
-					{
-						GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Cyan,
-							TEXT("Troll Trap Activated: Shrunk to half size and teleported to Start!"));
-					}
+				if (GEngine)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Cyan,
+						FString::Printf(TEXT("Troll Trap Activated (%s): Shrunk to half size and teleported to Checkpoint!"),
+						bIsOnSidePlate ? TEXT("Side Panel Roast") : TEXT("Main Plate")));
 				}
 			}
 		}
 		else
 		{
-			if (Dist2DSq > 250.0f * 250.0f)
-			{
-				bHasTriggeredPressurePlate = false;
-			}
+			bHasTriggeredPressurePlate = false;
 		}
 	}
 
@@ -607,8 +737,15 @@ void ATrollGameCharacter::RespawnAtCheckpoint()
 	FRotator DestRot = ActiveCheckpointTransform.GetRotation().Rotator();
 	TeleportTo(DestLoc, DestRot, false, true);
 
-	// Restore normal player size, speed, and jump
-	ResetPlayerScaleAndMovement();
+	// Zero out movement velocity on respawning so player spawns cleanly
+	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+	{
+		MoveComp->Velocity = FVector::ZeroVector;
+	}
+
+	// NOTE: Player scale & movement stats are preserved on void fall!
+	// If the player was shrunk when falling into the void, they remain shrunk.
+	// If the player was normal sized, they remain normal sized.
 
 	// Restore and re-enable all TrapFallFloor actors and components
 	bTrapFallFloorTriggered = false;
@@ -644,10 +781,14 @@ void ATrollGameCharacter::RespawnAtCheckpoint()
 		}
 	}
 
-	// Update the screen text on respawn
+	// Update the screen text on respawn (only switch to RespawnMessage if player is normal sized)
 	if (ScreenTextComponent)
 	{
-		ScreenTextComponent->SetText(FText::FromString(RoomRespawnMessage));
+		bool bIsShrunk = !GetActorScale3D().Equals(BaseActorScale, 0.05f);
+		if (!bIsShrunk)
+		{
+			ScreenTextComponent->SetText(FText::FromString(RoomRespawnMessage));
+		}
 	}
 
 	if (GEngine)

@@ -34,9 +34,17 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> DoorFrameMesh;
 
-	/** Moving door mesh (swings or slides) */
+	/** Single door mesh fallback (swings or slides) */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> DoorMesh;
+
+	/** Left sliding door panel component (e.g. Level_1_Door_1_left) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	TObjectPtr<USceneComponent> LeftDoorComponent;
+
+	/** Right sliding door panel component (e.g. Level_1_Door_1_right) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	TObjectPtr<USceneComponent> RightDoorComponent;
 
 	/** Status text over the door ("LOCKED" / "UNLOCKED") */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -47,11 +55,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Math Trap|Audio")
 	TObjectPtr<USoundBase> UnlockSound;
 
-	/** Target relative yaw rotation when fully open (e.g. -90 degrees) */
+	/** Target relative yaw rotation when fully open (for single swinging door fallback) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Math Trap|Door")
 	float OpenYawAngle = -90.0f;
 
-	/** How quickly the door swings open */
+	/** Distance the left and right door panels slide apart when opening */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Math Trap|Door")
+	float SlideDistance = 120.0f;
+
+	/** Local direction vector along which doors slide apart (default lateral Y-axis) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Math Trap|Door")
+	FVector SlideDirection = FVector(0.0f, 1.0f, 0.0f);
+
+	/** How quickly the door slides or swings open */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Math Trap|Door")
 	float OpenSpeed = 4.0f;
 
@@ -70,5 +86,12 @@ public:
 protected:
 	FRotator ClosedRotation;
 	FRotator OpenRotation;
+
+	FVector LeftClosedLoc;
+	FVector LeftOpenLoc;
+
+	FVector RightClosedLoc;
+	FVector RightOpenLoc;
+
 	bool bIsOpening = false;
 };

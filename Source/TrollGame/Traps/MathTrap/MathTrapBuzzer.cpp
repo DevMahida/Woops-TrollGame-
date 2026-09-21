@@ -10,6 +10,8 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "EngineUtils.h"
+#include "Engine/Engine.h"
+#include "TimerManager.h"
 
 AMathTrapBuzzer::AMathTrapBuzzer()
 {
@@ -29,12 +31,12 @@ AMathTrapBuzzer::AMathTrapBuzzer()
 
 	NumberText = CreateDefaultSubobject<UTextRenderComponent>(TEXT("NumberText"));
 	NumberText->SetupAttachment(RootComponent);
-	NumberText->SetRelativeLocation(FVector(0.0f, 0.0f, 60.0f));
-	NumberText->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
+	NumberText->SetRelativeLocation(FVector(0.0f, 0.0f, 125.0f));
+	NumberText->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 	NumberText->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
 	NumberText->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
-	NumberText->SetWorldSize(32.0f);
-	NumberText->SetTextRenderColor(FColor(255, 220, 50, 255)); // Warm gold
+	NumberText->SetWorldSize(40.0f);
+	NumberText->SetTextRenderColor(FColor(255, 30, 30, 255)); // Bright Vibrant Red
 
 	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
 	TriggerBox->SetupAttachment(RootComponent);
@@ -75,6 +77,12 @@ void AMathTrapBuzzer::BeginPlay()
 	if (NumberText)
 	{
 		NumberText->SetText(FText::AsNumber(BuzzerNumber));
+		FBox Bounds(ForceInit);
+		if (ButtonMesh) Bounds += ButtonMesh->Bounds.GetBox();
+		if (BaseMesh) Bounds += BaseMesh->Bounds.GetBox();
+		float TopZ = Bounds.IsValid ? Bounds.Max.Z : GetActorLocation().Z;
+		float FinalZ = FMath::Max(TopZ + 60.0f, GetActorLocation().Z + 110.0f);
+		NumberText->SetWorldLocation(FVector(GetActorLocation().X, GetActorLocation().Y, FinalZ));
 	}
 
 	if (TriggerBox)
@@ -133,21 +141,12 @@ void AMathTrapBuzzer::Tick(float DeltaTime)
 void AMathTrapBuzzer::OnTriggerOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!bCanBePressed || !OtherActor || OtherActor == this)
-	{
-		return;
-	}
-
-	ACharacter* PlayerChar = Cast<ACharacter>(OtherActor);
-	if (PlayerChar)
-	{
-		PressBuzzer(PlayerChar);
-	}
+	// Automatic overlap pressing disabled - player must look at buzzer and press [E]
 }
 
 void AMathTrapBuzzer::PressBuzzer(ACharacter* PlayerCharacter)
 {
-	if (!bCanBePressed)
+	if (!bCanBePressed || (TrapManager && TrapManager->bTrapCompleted))
 	{
 		return;
 	}
@@ -181,7 +180,7 @@ void AMathTrapBuzzer::SetHighlight(bool bEnable)
 	if (NumberText)
 	{
 		// Switch text color to match highlight
-		NumberText->SetTextRenderColor(bEnable ? FColor(50, 255, 100, 255) : FColor(255, 220, 50, 255));
+		NumberText->SetTextRenderColor(bEnable ? FColor(50, 255, 100, 255) : FColor(255, 30, 30, 255));
 	}
 }
 

@@ -88,9 +88,9 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<AActor> HallwayStartActor;
 
-	/** Cached pointer to the PressurePlate actor */
+	/** Cached pointers to all PressurePlate actors (main + side plates) in the level */
 	UPROPERTY(Transient)
-	TObjectPtr<AActor> HallwayPressurePlateActor;
+	TArray<TObjectPtr<AActor>> HallwayPressurePlateActors;
 
 	/** Cached pointer to the Room Screen actor */
 	UPROPERTY(Transient)
@@ -110,7 +110,11 @@ protected:
 
 	/** Message displayed on the room screen when player is shrunk by the pressure plate trap */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Room Screen")
-	FString RoomShrinkTrapMessage = TEXT("HONEY, I SHRUNK THE NOOB!\n\nNow your body matches your skill level.\n\nGood luck making that jump\nwith those tiny legs!");
+	FString RoomShrinkTrapMessage = TEXT("HONEY, I SHRUNK THE NOOB!\n\nNow your body matches your skill level.\n\nGood luck making that jump\nwith those tiny legs!\n\n[Size: Micro | Skill Level: Noob]");
+
+	/** Message displayed on the room screen when player steps on a side pressure plate */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Room Screen")
+	FString RoomSidePlateShrinkMessage = TEXT("LMAO! You really thought you cooked\nby walking on the side panel?\n\nAww, sad life for you!\n\nYour body is now officially as tiny\nas your brain and your gaming skills!\n\n[Size: Ant-Size | Skill Level: Trash]");
 
 	/** Cached list of all checkpoint actors found in the level (e.g. CheckPoint_1) */
 	UPROPERTY(Transient)
@@ -189,6 +193,10 @@ public:
 	/** Saves a new checkpoint transform */
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 	void SetActiveCheckpoint(const FTransform& NewCheckpoint);
+
+	/** Returns whether the player has activated at least one checkpoint */
+	UFUNCTION(BlueprintCallable, Category = "Checkpoint")
+	bool HasActiveCheckpoint() const { return bHasActiveCheckpoint; }
 
 	/** Returns the first person mesh **/
 	USkeletalMeshComponent* GetFirstPersonMesh() const { return FirstPersonMesh; }
