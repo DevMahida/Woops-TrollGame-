@@ -9,6 +9,7 @@
 #include "InputActionValue.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/TextRenderComponent.h"
+#include "Components/BoxComponent.h"
 #include "EngineUtils.h"
 #include "Engine/Engine.h"
 #include "TrollGame.h"
@@ -47,6 +48,12 @@ ATrollGameCharacter::ATrollGameCharacter()
 	// Configure character movement
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 	GetCharacterMovement()->AirControl = 0.5f;
+
+	// Populate default random troll messages for shrunk void fall
+	ShrunkVoidFallMessages.Add(TEXT("DEVS LOVE PLAYING WITH LITTLE PEOPLE!\n\nDid you think being tiny helped you\ndodge the void?\n\nYou fell right into the dev's\npocket-sized trap!\n\n[Size: Pocket Edition]"));
+	ShrunkVoidFallMessages.Add(TEXT("POCKET-SIZED DISAPPOINTMENT!\n\nShrunk, pushed, AND dropped into\nthe void!\n\nThe holy trinity of skill issues.\n\nDevs: 1 | Mini-Noob: 0"));
+	ShrunkVoidFallMessages.Add(TEXT("QUANTUM MICRO-NOOB DETECTED!\n\nYou were so small gravity didn't\neven notice you tripping over the edge!\n\nNext time bring an ant-sized parachute!"));
+	ShrunkVoidFallMessages.Add(TEXT("MINIATURE DRAIN FALL!\n\nEven at half size, your brain couldn't\nfind the floor.\n\nThanks for testing the dev's\nfavorite mini-toy trap!"));
 
 	// Enable ticking to monitor hallway trap
 	PrimaryActorTick.bCanEverTick = true;
@@ -130,6 +137,64 @@ void ATrollGameCharacter::BeginPlay()
 			         Actor->ActorHasTag(TEXT("Pressure")))
 			{
 				HallwayPressurePlateActors.AddUnique(Actor);
+			}
+			// Match ComeNear target actor
+			else if (Label.Contains(TEXT("ComeNear"), ESearchCase::IgnoreCase) || 
+			         Name.Contains(TEXT("ComeNear"), ESearchCase::IgnoreCase) ||
+			         Actor->ActorHasTag(TEXT("ComeNear")))
+			{
+				ComeNearActor = Actor;
+			}
+			// Match HallwayPush2 (check 2 first)
+			else if (Label.Contains(TEXT("HallwayPush2"), ESearchCase::IgnoreCase) || 
+			         Name.Contains(TEXT("HallwayPush2"), ESearchCase::IgnoreCase) ||
+			         Label.Contains(TEXT("Push2"), ESearchCase::IgnoreCase) ||
+			         Name.Contains(TEXT("Push2"), ESearchCase::IgnoreCase) ||
+			         Actor->ActorHasTag(TEXT("HallwayPush2")))
+			{
+				HallwayPushActor2 = Actor;
+				Push2InitialLoc = Actor->GetActorLocation();
+				Actor->SetActorEnableCollision(true);
+				TArray<UPrimitiveComponent*> Comps;
+				Actor->GetComponents<UPrimitiveComponent>(Comps);
+				for (UPrimitiveComponent* Comp : Comps)
+				{
+					if (Comp)
+					{
+						Comp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+						Comp->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
+					}
+				}
+			}
+			// Match HallwayPush / HallwayPush1 / Push1 / Push
+			else if (Label.Contains(TEXT("HallwayPush"), ESearchCase::IgnoreCase) || 
+			         Name.Contains(TEXT("HallwayPush"), ESearchCase::IgnoreCase) ||
+			         Label.Contains(TEXT("Push1"), ESearchCase::IgnoreCase) ||
+			         Name.Contains(TEXT("Push1"), ESearchCase::IgnoreCase) ||
+			         Actor->ActorHasTag(TEXT("HallwayPush")))
+			{
+				if (!HallwayPushActor1)
+				{
+					HallwayPushActor1 = Actor;
+					Push1InitialLoc = Actor->GetActorLocation();
+				}
+				else if (!HallwayPushActor2 && Actor != HallwayPushActor1)
+				{
+					HallwayPushActor2 = Actor;
+					Push2InitialLoc = Actor->GetActorLocation();
+				}
+
+				Actor->SetActorEnableCollision(true);
+				TArray<UPrimitiveComponent*> Comps;
+				Actor->GetComponents<UPrimitiveComponent>(Comps);
+				for (UPrimitiveComponent* Comp : Comps)
+				{
+					if (Comp)
+					{
+						Comp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+						Comp->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
+					}
+				}
 			}
 			else if (Label.Contains(TEXT("CheckPoint"), ESearchCase::IgnoreCase) || 
 			         Label.Contains(TEXT("Checkpoint"), ESearchCase::IgnoreCase) || 
@@ -374,6 +439,33 @@ void ATrollGameCharacter::Tick(float DeltaSeconds)
 	// Check if player fell into the void
 	if (PlayerLoc.Z < VoidKillZ)
 	{
+		bool bIsShrunk = !GetActorScale3D().Equals(BaseActorScale, 0.05f);
+		if (bIsShrunk)
+		{
+			ShrunkVoidFallCount++;
+
+			if (ScreenTextComponent)
+			{
+				if (ShrunkVoidFallCount == 1)
+				{
+					ScreenTextComponent->SetText(FText::FromString(ShrunkVoidFallHint1Message));
+				}
+				else if (ShrunkVoidFallCount == 2)
+				{
+					ScreenTextComponent->SetText(FText::FromString(ShrunkVoidFallHint2Message));
+				}
+				else // 3rd fall or beyond
+				{
+					ScreenTextComponent->SetText(FText::FromString(ShrunkVoidFallHint3Message));
+					bHallwayPushTrapDisabled = true;
+				}
+			}
+			else if (ShrunkVoidFallCount >= 3)
+			{
+				bHallwayPushTrapDisabled = true;
+			}
+		}
+
 		if (GEngine)
 		{
 			GEngine->AddOnScreenDebugMessage(51, 3.0f, FColor::Red,
@@ -487,42 +579,69 @@ void ATrollGameCharacter::Tick(float DeltaSeconds)
 	{
 		bool bIsOnPlate = false;
 		bool bIsOnSidePlate = false;
+		FString TriggeredCompName = TEXT("");
 
 		for (AActor* PPActor : HallwayPressurePlateActors)
 		{
 			if (!IsValid(PPActor)) continue;
 
-			ATrollPressurePlate* PressurePlate = Cast<ATrollPressurePlate>(PPActor);
-			bool bThisOnPlate = false;
-			bool bThisOnSidePlate = false;
+			FVector CPOrigin, CPExtent;
+			PPActor->GetActorBounds(false, CPOrigin, CPExtent);
 
-			if (PressurePlate)
+			FVector LocalOffset = PPActor->GetActorRotation().UnrotateVector(PlayerLoc - CPOrigin);
+			if (LocalOffset.Z < -500.0f || LocalOffset.Z > 1000.0f)
 			{
-				bThisOnPlate = PressurePlate->IsPlayerOnTrap(PlayerLoc, bThisOnSidePlate);
-			}
-			else
-			{
-				FVector ActorLoc = PPActor->GetActorLocation();
-				FVector CPOrigin, CPExtent;
-				PPActor->GetActorBounds(false, CPOrigin, CPExtent);
-
-				FVector LocalOffset = PPActor->GetActorRotation().UnrotateVector(PlayerLoc - ActorLoc);
-				float MarginX = FMath::Max(CPExtent.X, 60.0f) + 60.0f;
-				float MarginY = FMath::Max(CPExtent.Y, 60.0f) + 60.0f;
-
-				bThisOnPlate = (FMath::Abs(LocalOffset.X) <= MarginX) &&
-				               (FMath::Abs(LocalOffset.Y) <= MarginY) &&
-				               (LocalOffset.Z >= -500.0f && LocalOffset.Z <= 1000.0f);
-				
-				FString ActName = PPActor->GetActorLabel();
-				bThisOnSidePlate = ActName.Contains(TEXT("Side"), ESearchCase::IgnoreCase) ||
-				                   (FMath::Abs(LocalOffset.X) > CPExtent.X * 0.4f || FMath::Abs(LocalOffset.Y) > CPExtent.Y * 0.4f);
+				continue;
 			}
 
-			if (bThisOnPlate)
+			// Find all primitive/mesh components on this actor
+			TArray<UPrimitiveComponent*> Comps;
+			PPActor->GetComponents<UPrimitiveComponent>(Comps);
+
+			float MinDistSq = FLT_MAX;
+			UPrimitiveComponent* ClosestComp = nullptr;
+
+			for (UPrimitiveComponent* Comp : Comps)
+			{
+				if (!Comp || Comp->IsA<UBoxComponent>()) continue;
+
+				FVector CompLoc = Comp->GetComponentLocation();
+				float DistSq = FVector::DistSquared2D(PlayerLoc, CompLoc);
+				if (DistSq < MinDistSq)
+				{
+					MinDistSq = DistSq;
+					ClosestComp = Comp;
+				}
+			}
+
+			float MaxRadiusSq = FMath::Square(FMath::Max(CPExtent.X, FMath::Max(CPExtent.Y, 60.0f)) + 70.0f);
+
+			if (MinDistSq <= MaxRadiusSq || FVector::DistSquared2D(PlayerLoc, CPOrigin) <= MaxRadiusSq)
 			{
 				bIsOnPlate = true;
-				bIsOnSidePlate = bThisOnSidePlate;
+
+				FString CompName = ClosestComp ? ClosestComp->GetName() : PPActor->GetActorLabel();
+				FString TargetActorLabel = PPActor->GetActorLabel();
+
+				// Check if component name OR actor label contains "Side"
+				if (CompName.Contains(TEXT("Side"), ESearchCase::IgnoreCase) || 
+				    TargetActorLabel.Contains(TEXT("Side"), ESearchCase::IgnoreCase))
+				{
+					bIsOnSidePlate = true;
+				}
+				else
+				{
+					bIsOnSidePlate = false;
+				}
+
+				// If side pressure plates are disabled after 6 tries, stepping on a side plate is safe!
+				if (bIsOnSidePlate && bSidePressurePlatesDisabled)
+				{
+					bIsOnPlate = false;
+					break;
+				}
+
+				TriggeredCompName = ClosestComp ? CompName : TargetActorLabel;
 				break;
 			}
 		}
@@ -531,11 +650,13 @@ void ATrollGameCharacter::Tick(float DeltaSeconds)
 		if (GEngine)
 		{
 			GEngine->AddOnScreenDebugMessage(100, 0.0f, FColor::White,
-				FString::Printf(TEXT("PP Debug: OnPlate=%s SidePlate=%s Triggered=%s (Total Actors: %d)"),
+				FString::Printf(TEXT("PP Debug: OnPlate=%s SidePlate=%s Obj=[%s] Triggered=%s (Total Actors: %d, Tries: %d/6)"),
 				bIsOnPlate ? TEXT("YES") : TEXT("NO"),
 				bIsOnSidePlate ? TEXT("YES") : TEXT("NO"),
+				*TriggeredCompName,
 				bHasTriggeredPressurePlate ? TEXT("YES") : TEXT("NO"),
-				HallwayPressurePlateActors.Num()));
+				HallwayPressurePlateActors.Num(),
+				PressurePlateTriggerCount));
 		}
 
 		if (bIsOnPlate)
@@ -557,28 +678,100 @@ void ATrollGameCharacter::Tick(float DeltaSeconds)
 				FRotator TargetRot = ActiveCheckpointTransform.GetRotation().Rotator();
 				TeleportTo(TargetLoc, TargetRot, false, true);
 
-				// 2. Always shrink player to half size and halve speed & jump when stepping on pressure plate!
+				PressurePlateTriggerCount++;
+				bool bWasAlreadyShrunk = !GetActorScale3D().Equals(BaseActorScale, 0.05f);
+				int32 CurrentPlateType = bIsOnSidePlate ? 2 : 1;
+				bool bIsSamePlateRepeated = (bWasAlreadyShrunk && LastShrinkSourcePlate == CurrentPlateType);
+
+				if (bIsSamePlateRepeated)
+				{
+					ConsecutiveSamePlateCount++;
+				}
+				else
+				{
+					ConsecutiveSamePlateCount = 0;
+				}
+
+				// Determine message based on attempts, repeated presses, and plate type
+				FString DisplayMsg;
+				if (PressurePlateTriggerCount >= 6)
+				{
+					bSidePressurePlatesDisabled = true;
+					DisplayMsg = RoomSidePlatesDisabled6thMessage;
+				}
+				else if (bIsSamePlateRepeated && ConsecutiveSamePlateCount >= 2)
+				{
+					// Repeated pressing of the same plate: special roast with speed punishment
+					DisplayMsg = RoomRepeatPlatePunishMessage;
+				}
+				else if (!bWasAlreadyShrunk)
+				{
+					if (bIsOnSidePlate)
+					{
+						DisplayMsg = RoomSidePlateShrinkMessage;
+					}
+					else
+					{
+						DisplayMsg = RoomShrinkTrapMessage;
+					}
+				}
+				else
+				{
+					// Already shrunk: Context-aware roast
+					if (LastShrinkSourcePlate == 1 && bIsOnSidePlate)
+					{
+						// Shrunk from main plate, now tried side plate to avoid it
+						DisplayMsg = RoomShrunkMainThenSideMessage;
+					}
+					else if (LastShrinkSourcePlate == 2 && bIsOnSidePlate)
+					{
+						// Shrunk from side plate, stepped on side plate AGAIN
+						DisplayMsg = RoomShrunkSideRepeatMessage;
+					}
+					else if (LastShrinkSourcePlate == 2 && !bIsOnSidePlate)
+					{
+						// Shrunk from side plate, now stepped on main plate
+						DisplayMsg = RoomShrunkSideThenMainMessage;
+					}
+					else // LastShrinkSourcePlate == 1 && !bIsOnSidePlate (or fallback)
+					{
+						// Shrunk from main plate, stepped on main plate AGAIN
+						DisplayMsg = RoomShrunkMainRepeatMessage;
+					}
+				}
+
+				LastShrinkSourcePlate = CurrentPlateType;
+
+				// 2. Always shrink player to half size and reduce speed & jump
 				SetActorScale3D(BaseActorScale * 0.5f);
 
 				if (MoveComp)
 				{
 					MoveComp->Velocity = FVector::ZeroVector;
-					MoveComp->MaxWalkSpeed = BaseMaxWalkSpeed * 0.5f;
-					MoveComp->JumpZVelocity = BaseJumpZVelocity * 0.5f;
+
+					// Progressive speed reduction punishment on repeated same-plate presses
+					float SpeedMultiplier = 0.5f;
+					if (bIsSamePlateRepeated && ConsecutiveSamePlateCount > 0)
+					{
+						SpeedMultiplier = FMath::Max(0.15f, 0.5f - (ConsecutiveSamePlateCount * 0.1f));
+					}
+
+					MoveComp->MaxWalkSpeed = BaseMaxWalkSpeed * SpeedMultiplier;
+					MoveComp->JumpZVelocity = BaseJumpZVelocity * SpeedMultiplier;
 				}
 
-				// 3. Update the screen text for the shrink trap (side panel roast vs main shrink trap message)
+				// 3. Update the screen text for the shrink trap
 				if (ScreenTextComponent)
 				{
-					FString DisplayMsg = bIsOnSidePlate ? RoomSidePlateShrinkMessage : RoomShrinkTrapMessage;
 					ScreenTextComponent->SetText(FText::FromString(DisplayMsg));
 				}
 
 				if (GEngine)
 				{
 					GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Cyan,
-						FString::Printf(TEXT("Troll Trap Activated (%s): Shrunk to half size and teleported to Checkpoint!"),
-						bIsOnSidePlate ? TEXT("Side Panel Roast") : TEXT("Main Plate")));
+						FString::Printf(TEXT("Troll Trap Activated (%s) | Attempt %d/6: Shrunk & teleported to Checkpoint!"),
+						bIsOnSidePlate ? TEXT("Side Panel") : TEXT("Main Plate"),
+						PressurePlateTriggerCount));
 				}
 			}
 		}
@@ -588,8 +781,8 @@ void ATrollGameCharacter::Tick(float DeltaSeconds)
 		}
 	}
 
-	// --- 4. TRAP FALL FLOOR TRIGGER & REMOVE FLOOR COMPONENTS ---
-	if (!bTrapFallFloorTriggered)
+	// --- 4. TRAP FALL FLOOR TRIGGER & HALLWAY PUSHERS ---
+	if (!bHallwayPushTrapDisabled && !bTrapFallFloorTriggered && !bHallwayPushDelayActive && !bHallwayPushMoving)
 	{
 		bool bTriggerActivated = false;
 
@@ -673,6 +866,8 @@ void ATrollGameCharacter::Tick(float DeltaSeconds)
 		if (bTriggerActivated)
 		{
 			bTrapFallFloorTriggered = true;
+			bHallwayPushMoving = true;
+			bHallwayPushDelayActive = false;
 
 			// Instantly remove and disable all TrapFallFloor / FallFloor / FallSide actors
 			for (AActor* FloorActor : TrapFallFloorActors)
@@ -711,8 +906,110 @@ void ATrollGameCharacter::Tick(float DeltaSeconds)
 			if (GEngine)
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Orange,
-					FString::Printf(TEXT("Trap Triggered! Disappeared %d floor actors & %d components!"), 
-					TrapFallFloorActors.Num(), TrapFallFloorComponents.Num()));
+					FString::Printf(TEXT("Trap Triggered! Disappeared %d floor actors & Pushers moving instantly to ComeNear!"), 
+					TrapFallFloorActors.Num()));
+			}
+		}
+	}
+
+	// Process movement of HallwayPush and HallwayPush2 actors towards ComeNear
+	if (bHallwayPushMoving)
+	{
+		FVector TargetCenter = FVector::ZeroVector;
+		bool bHasTarget = false;
+
+		if (ComeNearActor)
+		{
+			TargetCenter = ComeNearActor->GetActorLocation();
+			bHasTarget = true;
+		}
+		else if (HallwayPushActor1 && HallwayPushActor2)
+		{
+			TargetCenter = (Push1InitialLoc + Push2InitialLoc) * 0.5f;
+			bHasTarget = true;
+		}
+		else if (HallwayPushActor1)
+		{
+			TargetCenter = Push1InitialLoc + FVector(0, 600, 0);
+			bHasTarget = true;
+		}
+		else if (HallwayPushActor2)
+		{
+			TargetCenter = Push2InitialLoc - FVector(0, 600, 0);
+			bHasTarget = true;
+		}
+
+		if (bHasTarget)
+		{
+			if (HallwayPushActor1)
+			{
+				FVector Loc1 = HallwayPushActor1->GetActorLocation();
+				FVector Dir1 = (TargetCenter - Push1InitialLoc).GetSafeNormal2D();
+				if (Dir1.IsNearlyZero())
+				{
+					Dir1 = FVector(0.0f, 1.0f, 0.0f);
+				}
+				FVector Target1 = TargetCenter + (Dir1 * 350.0f);
+				Target1.Z = Push1InitialLoc.Z;
+
+				FVector NewLoc1 = FMath::VInterpConstantTo(Loc1, Target1, DeltaSeconds, HallwayPushSpeed);
+				FVector Delta1 = NewLoc1 - Loc1;
+
+				// Set location without bSweep so static walls/floors won't block pusher movement
+				HallwayPushActor1->SetActorLocation(NewLoc1, false, nullptr, ETeleportType::TeleportPhysics);
+
+				// Accurate pusher bounding box check + extra margin
+				FVector POrigin1, PExtent1;
+				HallwayPushActor1->GetActorBounds(false, POrigin1, PExtent1);
+				bool bInZone1 = (FMath::Abs(PlayerLoc.X - POrigin1.X) <= (PExtent1.X + 80.0f)) &&
+				                (FMath::Abs(PlayerLoc.Y - POrigin1.Y) <= (PExtent1.Y + 80.0f)) &&
+				                (FMath::Abs(PlayerLoc.Z - POrigin1.Z) <= (PExtent1.Z + 120.0f));
+
+				// Solid displacement: if player overlaps or is close to pusher, push player along
+				if (IsOverlappingActor(HallwayPushActor1) || bInZone1 || FVector::DistSquared2D(PlayerLoc, NewLoc1) < 62500.0f)
+				{
+					AddActorWorldOffset(Delta1 * 1.25f, true);
+				}
+			}
+
+			if (HallwayPushActor2)
+			{
+				FVector Loc2 = HallwayPushActor2->GetActorLocation();
+				FVector Dir2 = (TargetCenter - Push2InitialLoc).GetSafeNormal2D();
+				if (Dir2.IsNearlyZero())
+				{
+					Dir2 = FVector(0.0f, -1.0f, 0.0f);
+				}
+				FVector Target2 = TargetCenter + (Dir2 * 350.0f);
+				Target2.Z = Push2InitialLoc.Z;
+
+				FVector NewLoc2 = FMath::VInterpConstantTo(Loc2, Target2, DeltaSeconds, HallwayPushSpeed);
+				FVector Delta2 = NewLoc2 - Loc2;
+
+				// Set location without bSweep so static walls/floors won't block pusher movement
+				HallwayPushActor2->SetActorLocation(NewLoc2, false, nullptr, ETeleportType::TeleportPhysics);
+
+				// Accurate pusher bounding box check + extra margin
+				FVector POrigin2, PExtent2;
+				HallwayPushActor2->GetActorBounds(false, POrigin2, PExtent2);
+				bool bInZone2 = (FMath::Abs(PlayerLoc.X - POrigin2.X) <= (PExtent2.X + 80.0f)) &&
+				                (FMath::Abs(PlayerLoc.Y - POrigin2.Y) <= (PExtent2.Y + 80.0f)) &&
+				                (FMath::Abs(PlayerLoc.Z - POrigin2.Z) <= (PExtent2.Z + 120.0f));
+
+				// Solid displacement: if player overlaps or is close to pusher, push player along
+				if (IsOverlappingActor(HallwayPushActor2) || bInZone2 || FVector::DistSquared2D(PlayerLoc, NewLoc2) < 62500.0f)
+				{
+					AddActorWorldOffset(Delta2 * 1.25f, true);
+				}
+			}
+
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(99, 0.0f, FColor::Cyan,
+					FString::Printf(TEXT("PUSHER LIVE MOVING: Target=[%s] P1=[%s] P2=[%s]"),
+					ComeNearActor ? *ComeNearActor->GetActorLabel() : TEXT("Midpoint"),
+					HallwayPushActor1 ? *HallwayPushActor1->GetActorLabel() : TEXT("NONE"),
+					HallwayPushActor2 ? *HallwayPushActor2->GetActorLabel() : TEXT("NONE")));
 			}
 		}
 	}
@@ -746,6 +1043,20 @@ void ATrollGameCharacter::RespawnAtCheckpoint()
 	// NOTE: Player scale & movement stats are preserved on void fall!
 	// If the player was shrunk when falling into the void, they remain shrunk.
 	// If the player was normal sized, they remain normal sized.
+
+	// Reset HallwayPush trap state & actor locations
+	bHallwayPushDelayActive = false;
+	bHallwayPushMoving = false;
+	HallwayPushDelayTimer = 0.0f;
+
+	if (HallwayPushActor1)
+	{
+		HallwayPushActor1->SetActorLocation(Push1InitialLoc, false, nullptr, ETeleportType::TeleportPhysics);
+	}
+	if (HallwayPushActor2)
+	{
+		HallwayPushActor2->SetActorLocation(Push2InitialLoc, false, nullptr, ETeleportType::TeleportPhysics);
+	}
 
 	// Restore and re-enable all TrapFallFloor actors and components
 	bTrapFallFloorTriggered = false;
@@ -809,6 +1120,10 @@ void ATrollGameCharacter::ResetPlayerScaleAndMovement()
 		MoveComp->MaxWalkSpeed = BaseMaxWalkSpeed;
 		MoveComp->JumpZVelocity = BaseJumpZVelocity;
 	}
+
+	ShrunkVoidFallCount = 0;
+	LastShrinkSourcePlate = 0;
+	ConsecutiveSamePlateCount = 0;
 }
 
 void ATrollGameCharacter::SetActiveCheckpoint(const FTransform& NewCheckpoint)

@@ -30,63 +30,115 @@ void AMathTrapManager::InitializeDefaultEquations()
 {
 	EquationPool.Empty();
 
-	// Answer = 1
+	// ==========================================
+	// Answer = 1 (7 Equations)
+	// ==========================================
 	EquationPool.Add(FComplexMathEquation(TEXT("(6 * 2 / 4 + 5 - 7)"), 1));
 	EquationPool.Add(FComplexMathEquation(TEXT("(18 / (3 * 2) + 2^2 - 6)"), 1));
 	EquationPool.Add(FComplexMathEquation(TEXT("(2^3 / 4 + sqrt(9) - 4)"), 1));
 	EquationPool.Add(FComplexMathEquation(TEXT("(10 / 2 - 2^2)"), 1));
+	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(16) / 2 - 1^4)"), 1));
+	EquationPool.Add(FComplexMathEquation(TEXT("(3 * 3 - 2^3)"), 1));
+	EquationPool.Add(FComplexMathEquation(TEXT("((5 + 3) / 4 - 1^3)"), 1));
 
-	// Answer = 2
+	// ==========================================
+	// Answer = 2 (7 Equations)
+	// ==========================================
 	EquationPool.Add(FComplexMathEquation(TEXT("(8 / 2 * (1 + 3) - 14)"), 2));
 	EquationPool.Add(FComplexMathEquation(TEXT("(12 - 3 * 2 + 4 / 2 - 6)"), 2));
 	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(64) / 4 + 5 * 0)"), 2));
 	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(100) / 2 - 2^2 + 1)"), 2));
+	EquationPool.Add(FComplexMathEquation(TEXT("(2^3 - 3 * 2)"), 2));
+	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(36) / 3)"), 2));
+	EquationPool.Add(FComplexMathEquation(TEXT("(14 / 7 + 9 * 0)"), 2));
 
-	// Answer = 3
+	// ==========================================
+	// Answer = 3 (7 Equations)
+	// ==========================================
 	EquationPool.Add(FComplexMathEquation(TEXT("(15 / 3 + 2 * 3 - 8)"), 3));
 	EquationPool.Add(FComplexMathEquation(TEXT("(3^2 - sqrt(16) - 2)"), 3));
 	EquationPool.Add(FComplexMathEquation(TEXT("(2^3 - sqrt(25))"), 3));
+	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(81) / 3)"), 3));
+	EquationPool.Add(FComplexMathEquation(TEXT("(4 * 3 / 2 - 3)"), 3));
+	EquationPool.Add(FComplexMathEquation(TEXT("(2^2 - 1^7)"), 3));
+	EquationPool.Add(FComplexMathEquation(TEXT("((18 + 6) / 8)"), 3));
 
-	// Answer = 4
+	// ==========================================
+	// Answer = 4 (7 Equations)
+	// ==========================================
 	EquationPool.Add(FComplexMathEquation(TEXT("(20 / 4 * 2 - 3 * 2)"), 4));
 	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(81) / 3 + 4^0)"), 4));
 	EquationPool.Add(FComplexMathEquation(TEXT("(2^3 / 2)"), 4));
+	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(144) / 3)"), 4));
+	EquationPool.Add(FComplexMathEquation(TEXT("(3 * 4 - 2^3)"), 4));
+	EquationPool.Add(FComplexMathEquation(TEXT("(16 / 4 + 7 * 0)"), 4));
+	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(64) / 2)"), 4));
 
-	// Answer = 5
+	// ==========================================
+	// Answer = 5 (7 Equations)
+	// ==========================================
 	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(25) + 6 / 2 - 3)"), 5));
 	EquationPool.Add(FComplexMathEquation(TEXT("(10 / 2 * (3 - 2))"), 5));
 	EquationPool.Add(FComplexMathEquation(TEXT("(3^2 - sqrt(16))"), 5));
 	EquationPool.Add(FComplexMathEquation(TEXT("(2^2 + 1^5)"), 5));
+	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(100) / 2)"), 5));
+	EquationPool.Add(FComplexMathEquation(TEXT("(20 / 4 + 8 * 0)"), 5));
+	EquationPool.Add(FComplexMathEquation(TEXT("(2^3 - 3)"), 5));
 
-	// Answer = 6
+	// ==========================================
+	// Answer = 6 (7 Equations)
+	// ==========================================
 	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(36) * 2 / 2)"), 6));
 	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(144) / 2)"), 6));
 	EquationPool.Add(FComplexMathEquation(TEXT("(2^3 - sqrt(4))"), 6));
 	EquationPool.Add(FComplexMathEquation(TEXT("(3 * 4 / 2)"), 6));
+	EquationPool.Add(FComplexMathEquation(TEXT("(18 / 3)"), 6));
+	EquationPool.Add(FComplexMathEquation(TEXT("(3^2 - sqrt(9))"), 6));
+	EquationPool.Add(FComplexMathEquation(TEXT("(2 * 4 - 2)"), 6));
 
-	// Answer = 7
+	// ==========================================
+	// Answer = 7 (7 Equations)
+	// ==========================================
 	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(49) + 3 * 0)"), 7));
 	EquationPool.Add(FComplexMathEquation(TEXT("(5 * 2 - sqrt(9))"), 7));
 	EquationPool.Add(FComplexMathEquation(TEXT("(2^3 - 1^4)"), 7));
 	EquationPool.Add(FComplexMathEquation(TEXT("(14 / 2 * (2 - 1))"), 7));
+	EquationPool.Add(FComplexMathEquation(TEXT("(3^2 - sqrt(4))"), 7));
+	EquationPool.Add(FComplexMathEquation(TEXT("(21 / 3)"), 7));
+	EquationPool.Add(FComplexMathEquation(TEXT("(4 * 2 - 1^6)"), 7));
 
-	// Answer = 8
+	// ==========================================
+	// Answer = 8 (7 Equations)
+	// ==========================================
 	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(64) + 4 / 2 - 2)"), 8));
 	EquationPool.Add(FComplexMathEquation(TEXT("(2^3 * (4 - 3))"), 8));
 	EquationPool.Add(FComplexMathEquation(TEXT("(4 * 4 / 2)"), 8));
 	EquationPool.Add(FComplexMathEquation(TEXT("(3^2 - 1^3)"), 8));
+	EquationPool.Add(FComplexMathEquation(TEXT("(24 / 3)"), 8));
+	EquationPool.Add(FComplexMathEquation(TEXT("(2 * 5 - sqrt(4))"), 8));
+	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(16) * 2)"), 8));
 
-	// Answer = 9
+	// ==========================================
+	// Answer = 9 (7 Equations)
+	// ==========================================
 	EquationPool.Add(FComplexMathEquation(TEXT("(3^2 + 7 * 0)"), 9));
 	EquationPool.Add(FComplexMathEquation(TEXT("(5 * 2 - 1^5)"), 9));
 	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(81) * (5 - 4))"), 9));
 	EquationPool.Add(FComplexMathEquation(TEXT("(2^3 + 4 / 4)"), 9));
+	EquationPool.Add(FComplexMathEquation(TEXT("(27 / 3)"), 9));
+	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(64) + 1^8)"), 9));
+	EquationPool.Add(FComplexMathEquation(TEXT("(4 * 2 + 1)"), 9));
 
-	// Answer = 10
+	// ==========================================
+	// Answer = 10 (7 Equations)
+	// ==========================================
 	EquationPool.Add(FComplexMathEquation(TEXT("(sqrt(100) + 8 * 0)"), 10));
 	EquationPool.Add(FComplexMathEquation(TEXT("(2 * 5 + 3 - 3)"), 10));
 	EquationPool.Add(FComplexMathEquation(TEXT("(4^2 - 3 * 2)"), 10));
 	EquationPool.Add(FComplexMathEquation(TEXT("(2^3 + sqrt(4))"), 10));
+	EquationPool.Add(FComplexMathEquation(TEXT("(3^2 + 1^9)"), 10));
+	EquationPool.Add(FComplexMathEquation(TEXT("(30 / 3)"), 10));
+	EquationPool.Add(FComplexMathEquation(TEXT("(5 * 4 / 2)"), 10));
 }
 
 void AMathTrapManager::BeginPlay()
@@ -863,6 +915,7 @@ void AMathTrapManager::Tick(float DeltaTime)
 void AMathTrapManager::ResetRoom()
 {
 	CurrentAttempt = 1;
+	CipherStageFailures = 0;
 	bTrapCompleted = false;
 	bDoorOpeningAnimation = false;
 
@@ -1035,10 +1088,91 @@ void AMathTrapManager::ProcessBuzzerInput(int32 PressedNum, AActor* BuzzerActor,
 	if (bTrapCompleted || (ExitDoor && ExitDoor->bIsOpen)) return;
 
 	FVector SoundLoc = BuzzerActor ? BuzzerActor->GetActorLocation() : GetActorLocation();
-	int32 TrueAnswer = FMath::Clamp(CurrentEquation.BaseAnswer, 1, 10);
+	// ====== CALCULATE MULTI-STEP CIPHER SOLUTION ======
+	// 1. Base answer of the current equation
+	int32 A = FMath::Clamp(CurrentEquation.BaseAnswer, 1, 10);
 
-	// ====== ATTEMPT 6+ ONLY: TRUE ANSWER UNLOCKS DOOR ======
-	if (CurrentAttempt >= 6 && PressedNum == TrueAnswer)
+	// 2. Summation step (e.g. 7 + 7 = 14 -> 4)
+	int32 Sum = A + A;
+	int32 D = (Sum <= 10) ? Sum : (((Sum - 1) % 10) + 1);
+
+	// 3. Offset step: D-th buzzer from the D-labeled buzzer
+	int32 StartIndex = INDEX_NONE;
+	int32 TargetLeftIndex = 0;
+	int32 TargetRightIndex = 0;
+	int32 TargetCorrectNumber = D;
+	int32 TargetLeftNumber = D;
+	int32 TargetRightNumber = D;
+	AActor* TargetCorrectActor = nullptr;
+	AActor* TargetRightActor = nullptr;
+
+	if (GenericBuzzers.Num() > 0)
+	{
+		for (int32 i = 0; i < GenericBuzzers.Num(); ++i)
+		{
+			if (GenericBuzzers[i].Number == D)
+			{
+				StartIndex = i;
+				break;
+			}
+		}
+
+		if (StartIndex == INDEX_NONE)
+		{
+			StartIndex = (D - 1) % GenericBuzzers.Num();
+		}
+
+		TargetRightIndex = (StartIndex + D) % GenericBuzzers.Num();
+		TargetLeftIndex = (StartIndex - (D % GenericBuzzers.Num()) + GenericBuzzers.Num()) % GenericBuzzers.Num();
+
+		TargetCorrectNumber = TargetLeftNumber = GenericBuzzers[TargetLeftIndex].Number;
+		TargetCorrectActor = GenericBuzzers[TargetLeftIndex].BuzzerActor;
+
+		TargetRightNumber = GenericBuzzers[TargetRightIndex].Number;
+		TargetRightActor = GenericBuzzers[TargetRightIndex].BuzzerActor;
+	}
+	else if (RoomBuzzers.Num() > 0)
+	{
+		StartIndex = (D - 1) % RoomBuzzers.Num();
+		TargetRightIndex = (StartIndex + D) % RoomBuzzers.Num();
+		TargetLeftIndex = (StartIndex - (D % RoomBuzzers.Num()) + RoomBuzzers.Num()) % RoomBuzzers.Num();
+
+		TargetCorrectNumber = TargetLeftNumber = RoomBuzzers[TargetLeftIndex]->BuzzerNumber;
+		TargetCorrectActor = RoomBuzzers[TargetLeftIndex];
+
+		TargetRightNumber = RoomBuzzers[TargetRightIndex]->BuzzerNumber;
+		TargetRightActor = RoomBuzzers[TargetRightIndex];
+	}
+	else
+	{
+		TargetCorrectNumber = TargetLeftNumber = ((2 * D - 1) % 10) + 1;
+		TargetRightNumber = TargetCorrectNumber;
+	}
+
+	bool bIsCorrect = (PressedNum == TargetLeftNumber) || (PressedNum == TargetRightNumber) ||
+	                  (BuzzerActor != nullptr && (BuzzerActor == TargetCorrectActor || BuzzerActor == TargetRightActor));
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 8.0f, bIsCorrect ? FColor::Green : FColor::Red,
+			FString::Printf(TEXT("[MathTrap] Attempt %d | Eq: %s (Ans=%d) -> Sum=%d (D=%d) | StartIdx=%d (#%d) | LeftTarget=#%d (Idx %d), RightTarget=#%d (Idx %d) | Pressed=#%d -> Result: %s"),
+				CurrentAttempt,
+				*CurrentEquation.EquationText,
+				A,
+				Sum,
+				D,
+				StartIndex,
+				GenericBuzzers.IsValidIndex(StartIndex) ? GenericBuzzers[StartIndex].Number : (RoomBuzzers.IsValidIndex(StartIndex) ? RoomBuzzers[StartIndex]->BuzzerNumber : D),
+				TargetLeftNumber, TargetLeftIndex,
+				TargetRightNumber, TargetRightIndex,
+				PressedNum,
+				bIsCorrect ? (CurrentAttempt >= 6 ? TEXT("SUCCESS (DOOR UNLOCKED)") : TEXT("CORRECT (TROLL ATTEMPT)")) : TEXT("WRONG")
+			)
+		);
+	}
+
+	// ====== ATTEMPT 6+ ONLY: CIPHER ANSWER UNLOCKS DOOR ======
+	if (CurrentAttempt >= 6 && bIsCorrect)
 	{
 		bTrapCompleted = true;
 		// Clear any highlights
@@ -1108,12 +1242,12 @@ void AMathTrapManager::ProcessBuzzerInput(int32 PressedNum, AActor* BuzzerActor,
 			}
 		}
 
-		FString WinText = TEXT("LEVEL CLEARED!\n\nDOOR UNLOCKED!\n\nYou actually solved the math problem!\nProceed through the exit door!");
+		FString WinText = TEXT("LEVEL CLEARED!\n\nDOOR UNLOCKED!\n\nYou successfully decoded the math puzzle!\nProceed through the exit door!");
 		UpdateScreenText(WinText, FColor(0, 255, 100, 255));
 		return;
 	}
 
-	// ====== WRONG ANSWER ======
+	// ====== WRONG ANSWER (OR ATTEMPTS 1 TO 5) ======
 	if (WrongBuzzerSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, WrongBuzzerSound, SoundLoc);
@@ -1121,11 +1255,8 @@ void AMathTrapManager::ProcessBuzzerInput(int32 PressedNum, AActor* BuzzerActor,
 
 	ApplyConsequence(PlayerCharacter, BuzzerActor);
 
-	int32 A = TrueAnswer;
-	int32 SummationRaw = A + A;
-	int32 TargetBuzzer2 = (SummationRaw <= 10) ? SummationRaw : (((SummationRaw - 1) % 10) + 1);
-	int32 Attempt3Raw = TargetBuzzer2 + TargetBuzzer2;
-	int32 TargetBuzzer3 = (Attempt3Raw <= 10) ? Attempt3Raw : (((Attempt3Raw - 1) % 10) + 1);
+	// Pick a fresh new equation after every wrong entry
+	PickNewEquation();
 
 	switch (CurrentAttempt)
 	{
@@ -1134,8 +1265,8 @@ void AMathTrapManager::ProcessBuzzerInput(int32 PressedNum, AActor* BuzzerActor,
 		CurrentAttempt = 2;
 
 		FString Hint2Text = FString::Printf(
-			TEXT("DID YOU REALLY THINK IT WAS THAT EASY?\n\nNo one escapes on the first try!\nA true mathematician knows you must do the SUMMATION of the answer!\n\n(e.g., If the answer is %d, then do %d + %d = %d)\n\nNow go press buzzer #%d!"),
-			A, A, A, SummationRaw, TargetBuzzer2
+			TEXT("DID YOU REALLY THINK IT WAS THAT EASY? 😂\n\nNo one escapes on the first try!\nA true mathematician knows you must do the SUMMATION of the answer!\n(e.g., If answer is 2 then 2 + 2 = 4, press buzzer #4!)\n\nNEW EQUATION:\n%s = ?"),
+			*CurrentEquation.EquationText
 		);
 
 		UpdateScreenText(Hint2Text, FColor(255, 200, 0, 255));
@@ -1147,8 +1278,8 @@ void AMathTrapManager::ProcessBuzzerInput(int32 PressedNum, AActor* BuzzerActor,
 		CurrentAttempt = 3;
 
 		FString Hint3Text = FString::Printf(
-			TEXT("DEV OOPSIE!\n\nThe developer forgot to write the entire hint!\nHere is the remaining part:\n\n\"If the answer is %d, then press the %dth buzzer from the %dth labeled buzzer!\"\n\n(Hurry, press buzzer #%d!)"),
-			TargetBuzzer2, TargetBuzzer2, TargetBuzzer2, TargetBuzzer3
+			TEXT("DEV OOPSIE! 🤦‍♂️\n\nThe developer forgot to say the entire hint!\nHere is the remaining part:\n\"If answer is 2 then 2 + 2 = 4, then press the 4th buzzer from the labeled buzzer!\"\n\nNEW EQUATION:\n%s = ?"),
+			*CurrentEquation.EquationText
 		);
 
 		UpdateScreenText(Hint3Text, FColor(255, 120, 0, 255));
@@ -1159,7 +1290,10 @@ void AMathTrapManager::ProcessBuzzerInput(int32 PressedNum, AActor* BuzzerActor,
 	{
 		CurrentAttempt = 4;
 
-		FString RoastText = TEXT("ARE YOU SERIOUS?!\n\nEven a calculator from 1980 has better logic than you!\n\nYou're just blindly following random hints on a screen!\nStop guessing and use your brain!");
+		FString RoastText = FString::Printf(
+			TEXT("ARE YOU SERIOUS?! 🤦‍♂️\n\nEven a calculator from 1980 has better logic than you!\nYou're just blindly following random hints on a screen!\nStop guessing and use your brain!\n\nNEW EQUATION:\n%s = ?"),
+			*CurrentEquation.EquationText
+		);
 
 		UpdateScreenText(RoastText, FColor(255, 50, 50, 255));
 		break;
@@ -1169,41 +1303,66 @@ void AMathTrapManager::ProcessBuzzerInput(int32 PressedNum, AActor* BuzzerActor,
 	{
 		CurrentAttempt = 5;
 
-		// Highlight a WRONG dedicated buzzer
-		FakeHighlightedBuzzer = nullptr;
-		for (AMathTrapBuzzer* B : RoomBuzzers)
-		{
-			if (B && B->BuzzerNumber != A)
-			{
-				FakeHighlightedBuzzer = B;
-				break;
-			}
-		}
+		// Clear any previous highlights
 		if (FakeHighlightedBuzzer)
 		{
-			FakeHighlightedBuzzer->SetHighlight(true);
+			FakeHighlightedBuzzer->SetHighlight(false);
+			FakeHighlightedBuzzer = nullptr;
+		}
+		if (FakeHighlightedGenericBuzzerIndex != INDEX_NONE && GenericBuzzers.IsValidIndex(FakeHighlightedGenericBuzzerIndex))
+		{
+			if (GenericBuzzers[FakeHighlightedGenericBuzzerIndex].HighlightLight)
+			{
+				GenericBuzzers[FakeHighlightedGenericBuzzerIndex].HighlightLight->SetVisibility(false);
+			}
+			if (GenericBuzzers[FakeHighlightedGenericBuzzerIndex].NumberText)
+			{
+				GenericBuzzers[FakeHighlightedGenericBuzzerIndex].NumberText->SetTextRenderColor(FColor(255, 30, 30, 255));
+			}
+			FakeHighlightedGenericBuzzerIndex = INDEX_NONE;
 		}
 
-		// Highlight a WRONG generic buzzer in green
-		FakeHighlightedGenericBuzzerIndex = INDEX_NONE;
-		for (int32 i = 0; i < GenericBuzzers.Num(); ++i)
+		// Activate Fake Highlight on a buzzer that is NOT the true answer
+		if (GenericBuzzers.Num() > 0)
 		{
-			if (GenericBuzzers[i].Number != A)
+			TArray<int32> FakeCandidates;
+			for (int32 i = 0; i < GenericBuzzers.Num(); ++i)
 			{
-				FakeHighlightedGenericBuzzerIndex = i;
-				if (GenericBuzzers[i].HighlightLight)
+				if (i != TargetLeftIndex && i != TargetRightIndex)
 				{
-					GenericBuzzers[i].HighlightLight->SetVisibility(true);
+					FakeCandidates.Add(i);
 				}
-				if (GenericBuzzers[i].NumberText)
+			}
+			if (FakeCandidates.Num() > 0)
+			{
+				FakeHighlightedGenericBuzzerIndex = FakeCandidates[FMath::RandRange(0, FakeCandidates.Num() - 1)];
+				if (GenericBuzzers[FakeHighlightedGenericBuzzerIndex].HighlightLight)
 				{
-					GenericBuzzers[i].NumberText->SetTextRenderColor(FColor(50, 255, 100, 255));
+					GenericBuzzers[FakeHighlightedGenericBuzzerIndex].HighlightLight->SetVisibility(true);
 				}
-				break;
+				if (GenericBuzzers[FakeHighlightedGenericBuzzerIndex].NumberText)
+				{
+					GenericBuzzers[FakeHighlightedGenericBuzzerIndex].NumberText->SetTextRenderColor(FColor(50, 255, 100, 255));
+				}
+			}
+		}
+		else if (RoomBuzzers.Num() > 0)
+		{
+			for (AMathTrapBuzzer* B : RoomBuzzers)
+			{
+				if (B && B != TargetCorrectActor && B != TargetRightActor)
+				{
+					FakeHighlightedBuzzer = B;
+					break;
+				}
+			}
+			if (FakeHighlightedBuzzer)
+			{
+				FakeHighlightedBuzzer->SetHighlight(true);
 			}
 		}
 
-		FString FakeHelpText = TEXT("DEV APOLOGY:\n\nOkay, look... the developer felt bad for you.\n\nI highlighted the correct buzzer with a bright glowing green light so you can just escape already.\n\nGo press the glowing green buzzer!");
+		FString FakeHelpText = TEXT("DEV APOLOGY 😇\n\nOkay, look... the developer felt bad for you.\nI highlighted the correct buzzer with a bright glowing green light so you can just escape already.\n\nGo press the glowing green buzzer!");
 
 		UpdateScreenText(FakeHelpText, FColor(50, 255, 100, 255));
 		break;
@@ -1211,7 +1370,10 @@ void AMathTrapManager::ProcessBuzzerInput(int32 PressedNum, AActor* BuzzerActor,
 
 	case 5:
 	{
-		// Clear highlights
+		CurrentAttempt = 6;
+		CipherStageFailures = 0;
+
+		// Deactivate the fake highlight
 		if (FakeHighlightedBuzzer)
 		{
 			FakeHighlightedBuzzer->SetHighlight(false);
@@ -1235,10 +1397,8 @@ void AMathTrapManager::ProcessBuzzerInput(int32 PressedNum, AActor* BuzzerActor,
 			UGameplayStatics::PlaySoundAtLocation(this, PrankLaughSound, SoundLoc);
 		}
 
-		CurrentAttempt = 6;
-
 		FString FooledYouText = FString::Printf(
-			TEXT("FOOLED YOU! HAHAHA!\n\nThere are no shortcuts in \"WHOOPS!\"\n\nNow stop looking for cheats and DO MATH PROPERLY!\n\nSolve: %s = ?\nPress the TRUE answer buzzer (1 - 10) to unlock the door!"),
+			TEXT("FOOLED YOU! HAHAHA! 😂\n\nThere are no shortcuts in \"WHOOPS!\"\nThose hints weren't fake—they are the EXACT RULES to escape!\n\n1. Solve the equation (Answer = A)\n2. Do Summation (A + A = D)\n3. Find buzzer labeled D, and count D buzzers from it!\n\nSOLVE: %s = ?"),
 			*CurrentEquation.EquationText
 		);
 
@@ -1246,16 +1406,29 @@ void AMathTrapManager::ProcessBuzzerInput(int32 PressedNum, AActor* BuzzerActor,
 		break;
 	}
 
-	default:
+	default: // Attempt 6 and beyond on wrong answer (real math cipher stage)
 	{
-		PickNewEquation();
+		CipherStageFailures++;
 
-		FString KeepTryingText = FString::Printf(
-			TEXT("WRONG BUZZER!\n\nSolve: %s = ?\n\nFind the true answer (1 - 10)!"),
-			*CurrentEquation.EquationText
-		);
+		if (CipherStageFailures >= 5)
+		{
+			// Progressive Left hint displayed only after 4 to 5 failed attempts on cipher stage
+			FString HintLeftText = FString::Printf(
+				TEXT("STILL STUCK? 💡\n\nHint: Try counting the buzzers in the LEFT direction as well!\nFind the buzzer labeled with your summation result, and count that many steps to your LEFT!\n\nNEW EQUATION:\n%s = ?"),
+				*CurrentEquation.EquationText
+			);
 
-		UpdateScreenText(KeepTryingText, FColor(255, 50, 50, 255));
+			UpdateScreenText(HintLeftText, FColor(255, 200, 0, 255));
+		}
+		else
+		{
+			FString WrongText = FString::Printf(
+				TEXT("WRONG BUZZER! ❌\n\nTeleporting to checkpoint...\n\nFollow the 3 rules:\n1. Solve equation (A)\n2. Summation (A + A = D)\n3. Count D buzzers from buzzer labeled D!\n\nNEW EQUATION:\n%s = ?"),
+				*CurrentEquation.EquationText
+			);
+
+			UpdateScreenText(WrongText, FColor(255, 50, 50, 255));
+		}
 		break;
 	}
 	}

@@ -3,25 +3,28 @@
 > **Status**: `FINALIZED`
 
 ## Vision
-Refactor and clean up the TrollGame C++ codebase to eliminate redundant, dead, or duplicate code blocks, clean up debug messages, and streamline trap detection logic while maintaining 100% feature functionality.
+Implement the Hallway Pusher Trap mechanics triggered by `"TrapFallFloorTrigger"`. After a 0.5-second delay upon trigger overlap, `"HallwayPush"` and `"HallwayPush2"` move towards each other, pushing the player into the void as the trap floor opens.
 
 ## Goals
-1. Clean up unused and redundant code paths in `TrollGameCharacter.cpp` and `TrollPressurePlate.cpp`.
-2. Consolidate pressure plate trap detection logic to avoid code duplication and ensure single-source-of-truth component discovery.
-3. Clean up debug logging and ensure all build targets compile with zero warnings or errors.
+1. Detect `"TrapFallFloorTrigger"` overlap by player.
+2. Introduce a precise **0.5-second delay** after trigger step before pusher movement and floor drop.
+3. Move `"HallwayPush"` and `"HallwayPush2"` towards each other to squeeze the hallway and force player down.
+4. Auto-reset pusher positions, delay timers, and floor collision when player respawns at a checkpoint.
 
 ## Non-Goals (Out of Scope)
-- Deleting core game features (checkpoint system, math trap manager, character movement scaling).
-- Modifying Unreal Engine asset references or breaking editor component bindings.
+- Modifying pressure plate shrink messages.
+- Changing character movement velocity parameters outside trap scope.
 
 ## Users
-Players and developers working on TrollGame.
+Players progressing through TrollGame hallways.
 
 ## Constraints
-- Must compile cleanly with `Build.bat` (Unreal Editor Development Win64 target).
-- Preserves all character trap mechanics, checkpoint resets, and room screen 3D text displays.
+- Must compile cleanly with 0 errors.
+- 0.5-second delay must be exact.
+- Resets seamlessly on checkpoint respawn or void kill.
 
 ## Success Criteria
-- [ ] No dead or redundant code blocks in `TrollGameCharacter.cpp` or `TrollPressurePlate.cpp`.
-- [ ] All 3 pressure plate objects (`PressurePlate`, `SidePressurePlate`, `SidePressurePlate1`) work seamlessly with clean, readable code.
-- [ ] Project builds cleanly via `Build.bat` with 0 errors.
+- [ ] Stepping on `"TrapFallFloorTrigger"` starts 0.5s timer.
+- [ ] After 0.5s delay, `"HallwayPush"` and `"HallwayPush2"` smoothly move towards each other.
+- [ ] Floor drops / opens, sending player into void.
+- [ ] Respawns at checkpoint reset pushers back to initial positions.

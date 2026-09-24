@@ -50,39 +50,48 @@ This guide is for the Unreal Engine level designer / integrator. In under **3 mi
 3. *(Optional Details Settings)*:
    * **ConsequenceType**: Choose between `Teleport to Room Start`, `Launch Backwards`, or `Kill and Respawn Player`.
    * **Audio**: Assign `WrongBuzzerSound`, `PrankLaughSound` (airhorn or cartoon laugh), and `VictorySound`.
-   * **EquationPool**: Pre-populated with rich BODMAS and radical/exponent equations. You can add your own custom equations anytime!
+   * **EquationPool**: Pre-populated with 70 mathematically verified BODMAS, radical, and exponent equations covering integer answers 1 to 10.
 
 ---
 
 ## 4. How the Troll Progression Plays Out in Game
 
-1. **Attempt 1 (Zero Clues)**:
-   * Screen displays the complex equation (e.g. `(8 ÷ 2 × (1 + 3) - 14) = ?`).
-   * Player calculates answer ($2$) and presses Buzzer #2.
-   * **Result**: *WRONG!* Buzzer buzzer sounds, player gets punished.
-
-2. **Attempt 2 (Summation Hint)**:
-   * Screen: *"DID YOU REALLY THINK IT WAS THAT EASY? A true mathematician knows you must do the SUMMATION of the answer! (2 + 2 = 4). Go press buzzer #4!"*
-   * Player presses Buzzer #4.
-   * **Result**: *WRONG!* Consequence triggers.
-
-3. **Attempt 3 (Dev Oopsie)**:
-   * Screen: *"DEV OOPSIE! The developer forgot to write the entire hint! Here is the missing part: 'If the answer is 4, press the 4th buzzer from the 4th labeled buzzer!' (Hurry, press #8!)"*
-   * Player presses Buzzer #8.
-   * **Result**: *WRONG!* Consequence triggers.
-
-4. **Attempt 4 (The Roast)**:
-   * Screen: *"ARE YOU SERIOUS?! Even a calculator from 1980 has better logic than you! You're just blindly following random hints on a screen! Stop guessing and use your brain!"*
+1. **Attempt 1 (Question with NO Hint)**:
+   * Screen displays initial equation (e.g. `(8 / 2 * (1 + 3) - 14) = ?`) with NO hint.
    * Player presses any buzzer.
-   * **Result**: *WRONG!* Consequence triggers.
+   * **Result**: *WRONG!* Consequence triggers, player teleported, numbers shuffle.
 
-5. **Attempt 5 (Fake Developer Help)**:
-   * Screen: *"DEV APOLOGY: The developer felt bad for you. I highlighted the correct buzzer with a bright glowing green light so you can just escape already. Go press the glowing buzzer!"*
-   * A fake buzzer starts glowing brightly in neon green.
-   * Player presses the glowing buzzer.
-   * **Result**: **PRANK!** Plays cartoon laughter / airhorn sound!
+2. **Attempt 2 (Summation Hint + NEW Equation)**:
+   * Screen displays a brand **NEW equation** along with the Summation troll hint:
+     *"DID YOU REALLY THINK IT WAS THAT EASY? A true mathematician knows you must do the SUMMATION of the answer! (e.g., If answer is 2 then 2 + 2 = 4, press buzzer #4!)"*
+   * Player presses a buzzer.
+   * **Result**: *WRONG!* Consequence triggers, player teleported, numbers shuffle.
 
-6. **Attempt 6 (The "Fooled You!" & True Solution)**:
-   * Screen: *"FOOLED YOU! HAHAHA! There are no shortcuts in 'WHOOPS!' Now stop looking for cheats and DO MATH PROPERLY! Solve the equation and press the TRUE answer buzzer!"*
-   * Player now presses the actual true answer buzzer (#2).
-   * **Result**: **VICTORY!** The exit door unlocks and swings open!
+3. **Attempt 3 (Dev Oopsie Hint + NEW Equation)**:
+   * Screen displays a brand **NEW equation** along with the Dev Oopsie troll hint:
+     *"DEV OOPSIE! The developer forgot to say the entire hint: 'If answer is 2 then 2 + 2 = 4, then press the 4th buzzer from the labeled buzzer!' "*
+   * Player presses a buzzer.
+   * **Result**: *WRONG!* Consequence triggers, player teleported, numbers shuffle.
+
+4. **Attempt 4 (The Roast & Dev Fake Highlight Prank)**:
+   * Screen:
+     *"DEV APOLOGY 😇: Okay look... the developer felt bad for you. I highlighted the correct buzzer with a bright glowing green light so you can just escape already. Go press the glowing green buzzer!"*
+   * A fake buzzer in the room lights up with a **neon glowing green spotlight**!
+   * Player presses the glowing green buzzer (or any other buzzer).
+   * **Result**: *WRONG!* Highlight turns off, prank laugh sound plays!
+
+5. **Attempt 5 (Fooled You & The Full Cipher Revealed)**:
+   * Screen:
+     *"FOOLED YOU! HAHAHA! 😂 There are no shortcuts in 'WHOOPS!' Those hints weren't fake—they are the EXACT RULES to escape! 1. Solve equation (A) 2. Summation (A + A = D) 3. Find buzzer labeled D, and press the Dth buzzer from it! SOLVE: (Equation) = ?"*
+
+6. **Attempt 6+ (The Real Cipher Stage & Progressive Left Hint)**:
+   * **First 1–4 Cipher Tries**: Standard wrong buzzer message prompting the player to apply the 3 cipher rules.
+   * **After 4–5 Failed Tries on Cipher Stage**: The screen displays the progressive directional clue:
+     *"STILL STUCK? 💡 Hint: Try counting the buzzers in the LEFT direction as well! Find the buzzer labeled with your summation result, and count that many steps to your LEFT!"*
+   * **Solving Logic**:
+     * Example: If equation answer $A = 7 \implies 7 + 7 = 14 \rightarrow D = 4$.
+     * Find the pedestal displaying number `4`, count `4` buzzers to the LEFT (or right), and press that buzzer!
+   * **Outcomes**:
+     * **Correct Target Buzzer**: **VICTORY!** Victory sound plays, exit door unlocks and swings open!
+     * **Wrong Buzzer**: Plays wrong buzzer sound, generates a **NEW equation**, reshuffles buzzer numbers, and teleports player back to checkpoint to try again.
+

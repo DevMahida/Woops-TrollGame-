@@ -138,6 +138,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Math Trap|State")
 	int32 CurrentAttempt = 1;
 
+	/** Number of failed attempts during the real cipher solving stage (Attempt 4+) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Math Trap|State")
+	int32 CipherStageFailures = 0;
+
 	/** Whether the math trap has been activated by reaching the checkpoint */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Math Trap|State")
 	bool bTrapActivated = false;

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Configuration xmlns="https://www.unrealengine.com/BuildConfiguration">
+  <BuildProvider>
+    <bAllowUBA>false</bAllowUBA>
+    <bUseUBA>false</bUseUBA>
+  </BuildProvider>
+  <UnrealBuildTool>
+    <bUseUBA>false</bUseUBA>
+    <bUseUBALocalProcess>false</bUseUBALocalProcess>
+  </UnrealBuildTool>
+  <Uba>
+    <RootDirectory>E:\Unreal\UBACli</RootDirectory>
+    <CasDirectory>E:\Unreal\UBACache</CasDirectory>
+  </Uba>
+  <ParallelExecutor>
+    <MaxProcessorCount>8</MaxProcessorCount>
+    <ProcessorCountMultiplier>1.0</ProcessorCountMultiplier>
+  </ParallelExecutor>
+</Configuration>

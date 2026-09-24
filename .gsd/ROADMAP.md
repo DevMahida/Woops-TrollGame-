@@ -1,24 +1,26 @@
 # ROADMAP.md
 
-> **Current Milestone**: Codebase Cleanup & Refactoring (`v1.0-Cleanup`)
-> **Goal**: Clean up the codebase, remove unnecessary and redundant code blocks, and optimize trap detection.
+> **Current Milestone**: Hallway Pusher Trap (`v1.1-PusherTrap`)
+> **Goal**: Implement 0.5s delayed HallwayPush & HallwayPush2 movement trap when TrapFallFloorTrigger is activated.
 
 ## Must-Haves
-- [ ] Audit and remove dead/redundant code blocks in `TrollGameCharacter.cpp` & `.h`.
-- [ ] Refactor `ATrollPressurePlate` detection logic to eliminate duplicate fallback branches.
-- [ ] Clean up debug HUD clutter while preserving trap functionality.
-- [ ] Full build verification with 0 compilation errors.
+- [x] Discover `"HallwayPush"` and `"HallwayPush2"` actors in level.
+- [x] Implement 0.5s delay timer on `"TrapFallFloorTrigger"` activation.
+- [x] Move `"HallwayPush"` and `"HallwayPush2"` towards each other in `Tick()`.
+- [x] Drop trap floor and push player into void.
+- [x] Reset pushers to original positions on checkpoint respawn.
 
 ## Phases
 
-### Phase 1: Audit Codebase & Identify Redundancies
-**Status**: ⬜ Not Started
-**Objective**: Inspect `TrollGameCharacter` and `TrollPressurePlate` to catalog all redundant functions, dead variables, and duplicate logic paths.
+### Phase 1: Actor Discovery & State Setup
+**Status**: ✅ Complete
+**Objective**: Cache `"HallwayPush"` and `"HallwayPush2"` actor locations and setup delay timer variables.
 
-### Phase 2: Refactor & Clean Codebase
-**Status**: ⬜ Not Started
-**Objective**: Remove identified redundant code blocks, simplify trap detection methods, and streamline component discovery.
+### Phase 2: Delayed Movement & Floor Drop Implementation
+**Status**: ✅ Complete
+**Objective**: Implement 0.5s delay timer, smooth inter-pusher movement, and floor collision removal.
 
-### Phase 3: Build & Empirical Verification
-**Status**: ⬜ Not Started
-**Objective**: Run full Unreal build, verify zero errors, and empirically test character trap mechanics.
+### Phase 3: Checkpoint Reset & Verification
+**Status**: ✅ Complete
+**Objective**: Reset pusher transforms on checkpoint respawn and verify build & execution.
+
